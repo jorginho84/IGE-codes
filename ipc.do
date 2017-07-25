@@ -1,0 +1,29 @@
+/*IPC info*/
+
+scalar define	ipc_1990	=	100.000000
+scalar define	ipc_1991	=	124.752808
+scalar define	ipc_1992	=	149.028021
+scalar define	ipc_1993	=	166.393045
+scalar define	ipc_1994	=	188.384762
+scalar define	ipc_1995	=	204.406552
+scalar define	ipc_1996	=	220.372374
+scalar define	ipc_1997	=	235.528525
+scalar define	ipc_1998	=	250.244394
+scalar define	ipc_1999	=	259.240327
+scalar define	ipc_2000	=	266.579605
+scalar define	ipc_2001	=	279.094064
+scalar define	ipc_2002	=	285.258013
+scalar define	ipc_2003	=	293.839782
+scalar define	ipc_2004	=	296.156860
+scalar define	ipc_2005	=	302.943920
+scalar define	ipc_2006	=	315.297937
+scalar define	ipc_2007	=	324.118503
+scalar define	ipc_2008	=	348.281781
+scalar define	ipc_2009	=	370.284691
+scalar define	ipc_2010	=	365.395563
+scalar define	ipc_2011	=	375.328065
+scalar define	ipc_2012	=	391.271339
+scalar define	ipc_2013	=	397.445343
+scalar define	ipc_2014	=	408.573812
+scalar define	ipc_2015	=	426.959634
+scalar define	ipc_2016	=	447.453696
