@@ -27,22 +27,25 @@ else if "`user'"=="Nico"{
 
 
 
+local var_names_labor v1 v2
+local var_names_capital v3 v4
+
 
 
 ****************Creating fake wage data from mothers, fathers, and student**************
-foreach indi in student father mother{
+use "$data/paa_9498_ok.dta", clear
+keep rut_
 
-use "$data/paa_9498_`indi'.dta", clear
-	keep rut_
-
-	forvalues x=1998/2015{
+forvalues x=1998/2015{
+	foreach variable in `var_names_labor' `var_names_capital'{
 		gen lwage=rnormal(3.95,1.22)
-		gen wage_`x'=exp(lwage)
-		drop lwage
+		gen `variable'_`x'=exp(lwage)
+		drop lwage	
 	}
-
-	save "$data/fakew_`indi'.dta", replace
+		
 }
+
+save "$data/fakew_ok.dta", replace
 
 
 

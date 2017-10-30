@@ -39,11 +39,25 @@ local wage_variables wage_*
 /*Nombre de data para data_final (recomendable: no cambiar)*/
 local data_wage_paa wage_paa
 
-/*1 if simulating SII merge, 0 if not*/
+/*1 if simulating SII merge, 0 if not*/	
 local simulated_sii=1
 
-/*Max number of siblings*/
-local n_siblings = 5
+
+/*Time frame*/
+local min_y = 1998
+local max_y = 2016
+
+/*Names of wages*/
+local var_names_labor v1* v2*
+local var_names_capital v3* v4*
+
+/*All wage variables (check format of SII data first)*/
+forvalues y=`min_y'/`max_y'{
+	local wage_labor_`y' v1_`y'	v2_`y'	
+	
+	local wage_capital_`y' v3_`y' v4_`y'
+}
+
 
 ******************************************************************
 ******************************************************************
@@ -60,88 +74,61 @@ use "$data/paa_9496_student.dta", clear
 *******************************************************************************
 
 if `simulated_sii'==1{
-	foreach ind in student father mother{
-		use "$data/paa_9498_`ind'.dta", clear
-		merge 1:1 rut_ using "$data/fakew_`ind'.dta"
-		drop _merge
-		tempfile wagedata_`ind'
-		save `wagedata_`ind'', replace
+	
+	use "$data/paa_9498_ok.dta", clear
+	merge 1:1 rut_ using "$data/fakew_ok.dta"
+	drop _merge
+	tempfile wage_data_all
+	save `wage_data_all', replace
 
-	}
+	
 }
+
+
 
 **********************************************************************
 **********************************************************************
 **********************************************************************
 /*
-We have data on wage and paa. Now, merge them (wide form)
-"$data/paa_9496_mother.dta"
-use "$data/paa_9496_student.dta"
+data in wide form: each obs is a student.
 
 */
 
-use `wagedata_student', clear
-count
-keep stud_id
-sort stud_id
-tempfile wagedata_student_aux
-save `wagedata_student_aux', replace
+foreach ind in "father" "mother"{
+	keep if individual=="`ind'"
+	rename rut_ rut_`ind'
+	keep rut_`ind' fam_id `var_names_labor' `var_names_capital'
 
-
-foreach ind in father mother{
-
-	use `wagedata_`ind'', clear
-
-	*Rename all variables
-	foreach vars of varlist _all{
-		rename `vars' `vars'_`ind'
-
-	}
-	
-	forvalues x=1/`n_siblings'{
-		preserve
-		rename stud_id`x'_`ind' stud_id
-		keep stud_id `wage_variables'
-		drop if stud_id==.
-		isid stud_id
-		merge 1:1 stud_id using `wagedata_student_aux'
-		keep if _merge==3
-		drop _merge
-		tempfile data_`ind'_aux_`x'
-		save `data_`ind'_aux_`x'', replace
-		restore
-		
+	foreach variable of varlist `var_names_labor' `var_names_capital'{
+		rename `variable' `variable'_`ind'
 	}
 
-	use `data_`ind'_aux_1', clear
-	forvalues x=2/4{
-		append using `data_`ind'_aux_`x''
+	sort fam_id
+	tempfile data_`ind'
+	save `data_`ind'', replace
 
-	}
+	use `wage_data_all', clear
 
-	*Students w/ mothers and fathers
-	tempfile all_`ind'
-	save `all_`ind'', replace
 
 
 }
 
 
-use `wagedata_student', clear
-foreach vars of varlist `wage_variables'{
-	rename `vars' `vars'_student
-}
-merge 1:1 stud_id using `all_father'
-gen merge_father=""
-replace merge_father="With father" if _merge==3
-replace merge_father="W/o father" if _merge==1
-drop _merge
-merge 1:1 stud_id using `all_mother'
-gen merge_mother=""
-replace merge_mother="With mother" if _merge==3
-replace merge_mother="W/o mother" if _merge==1
-drop _merge
 
-save "$data/`data_wage_paa'.dta", replace
+*Note the format of wage data.
+*This will probably change
 
-/*Here: analysis of merge*/
+keep if individual=="student"
+
+merge m:1 fam_id using `data_father'
+rename _merge merge_father
+
+merge m:1 fam_id using `data_mother'
+rename _merge merge_mother
+
+
+*Those who are not merged: students with brothers but did not put both father/mother rut
+*They may be from different families/father or mother died/ or forgot to put it
+*I'll leave them as it is
+
+
