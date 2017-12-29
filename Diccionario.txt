@@ -1,0 +1,10 @@
+Diccionario
+
+*ESTUDIOS DE LOS PADRES
+*Categoria1: Sin estudios(=1), básica incompleta(=2), básica completa(=3)
+*Categoria2: media incompleta(=4), media completa(=5)
+*Categoria3: Incluye a los que tienen estudiso superiores completos e incompletos.  
+
+
+/*TRABAJA O NO EL PADRE Y/O MADRE*/
+	/*se consideró activos y otros; =1 para activos*/

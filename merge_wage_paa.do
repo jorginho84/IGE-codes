@@ -14,7 +14,7 @@ set more off
 
 /*Cambiar folders*/
 
-local user Jorge
+local user C
 
 if "`user'"=="Jorge"{
 	global codes "/home/jorger/ige/codes"
@@ -29,12 +29,16 @@ else if "`user'"=="Nico"{
 
 }
 
+else if "`user'" == "C"{
+	global codes "C:\Users\death\Desktop\jorge1\ige-codes"
+	global data "C:\Users\death\Desktop\jorge1/data"
+	global results "C:\Users\death\Desktop\jorge1/results"
+
+}
 
 
 
 
-/*Name of wage_data (all of it)*/
-local wage_variables wage_*
 
 /*Nombre de data para data_final (recomendable: no cambiar)*/
 local data_wage_paa wage_paa
@@ -45,18 +49,14 @@ local simulated_sii=1
 
 /*Time frame*/
 local min_y = 1998
-local max_y = 2016
+local max_y = 2015
 
-/*Names of wages*/
-local var_names_labor v1* v2*
-local var_names_capital v3* v4*
+/*Names of wages: la idea es clasificarlas aca*/
+local var_names_labor w1* w2*
+local var_names_capital w3* w4*
 
-/*All wage variables (check format of SII data first)*/
-forvalues y=`min_y'/`max_y'{
-	local wage_labor_`y' v1_`y'	v2_`y'	
-	
-	local wage_capital_`y' v3_`y' v4_`y'
-}
+local prefix_labor w1 w2
+local prefix_capital w3 w4
 
 
 ******************************************************************
@@ -70,13 +70,14 @@ use "$data/paa_9496_student.dta", clear
 
 
 *******************************************************************************
-****ESTA LINEA PROBABLEMENTE CAMBIE (NO SERA NECESARIA SI SII ENTREGA DATOS DE ANTEMANO)****
+****ESTA LINEA PROBABLEMENTE CAMBIE (NO SERA NECESARIA YA QUE/*
+*/ SII ENTREGA DATOS DE ANTEMANO)****
 *******************************************************************************
 
 if `simulated_sii'==1{
 	
 	use "$data/paa_9498_ok.dta", clear
-	merge 1:1 rut_ using "$data/fakew_ok.dta"
+	merge 1:1 RUT using "$data/fakew_ok.dta"
 	drop _merge
 	tempfile wage_data_all
 	save `wage_data_all', replace
@@ -96,7 +97,7 @@ data in wide form: each obs is a student.
 
 foreach ind in "father" "mother"{
 	keep if individual=="`ind'"
-	rename rut_ rut_`ind'
+	rename RUT rut_`ind'
 	keep rut_`ind' fam_id `var_names_labor' `var_names_capital'
 
 	foreach variable of varlist `var_names_labor' `var_names_capital'{
@@ -126,9 +127,19 @@ rename _merge merge_father
 merge m:1 fam_id using `data_mother'
 rename _merge merge_mother
 
+*rename student wages
+foreach varname in `prefix_labor' `prefix_capital'{
+	forvalues y = `min_y'/`max_y'{
+		rename `varname'_`y' `varname'_`y'_student
+
+	}
+
+}
+
 
 *Those who are not merged: students with brothers but did not put both father/mother rut
 *They may be from different families/father or mother died/ or forgot to put it
 *I'll leave them as it is
 
+save "$data/`data_wage_paa'.dta", replace
 

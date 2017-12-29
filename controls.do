@@ -9,7 +9,7 @@ This do-file defines de control variables
 
 local identifiers rut_ fam_id individual digito 
 local charac sexo egreso year_na pareja trabaja region comuna
-local family socu_pa socu_ma pcoh
+local family socu_pa socu_ma pcoh esc_pa esc_ma
 local test_scores paa_v paa_m paa_h paa_b paa_s paa_f paa_mat paa_q  notas
 local schools codcol depe type_school type_educ jornada
 
@@ -21,8 +21,20 @@ foreach name in charac family test_scores schools{
 }
 
 
+/*Renaming*/
+	
+foreach name in charac family test_scores schools{
+	local i = 1
+	foreach variable in ``name''{
+		rename `name'_v`i' `variable'
+		destring `variable', force replace
 
-stop!
+		local i = `i' + 1
+	}
+}
+
+
+
 
 *********************************************************************
 *********************************************************************
@@ -53,7 +65,9 @@ label variable edm2 "estudios medios incompletos o completos de madre"
 label variable edm3 "estudios superiores completos o incompletos de madre"   
 
 *Who's head
-label variable pcoh "jere familia: (1) padre; (2) madre; (3) postulante"
+gen d_jefe = 0 if pcoh!=.
+replace d_jefe = 1 if pcoh == 3
+label variable d_jefe "jefe familia es postulante"
 
 *Gender
 label define gender_lbl 1 "Male" 2 "Female"
@@ -78,16 +92,18 @@ label values type_educ type_educ_lbl
 
 *Horario
 label define horario_lbl 1 "Diurno" 0 "Otros"
-label values horario horario_lbl
-
-*Average mat and language
-egen paa_av=rowmean(paa_v paa_m)
-replace paa_av=. if paa_av==0 
+label values jornada horario_lbl
 
 *Dependencia-colegio
 gen d_ppag=depe==1
 gen d_psub=depe==2
 gen d_muni=depe==3
+
+*Average mat and language
+egen paa_av=rowmean(paa_v paa_m)
+replace paa_av=. if paa_av==0 
+
+
 
 *Test scores
 rename paa_m paa_1                 /*Prueba Aptitud Matemática*/
@@ -108,8 +124,11 @@ label variable pce_3 "PCE Ciencias Sociales"
 label variable pce_4 "PCE Física"                
 label variable pce_5 "PCE Química"               
 
+*Dummy if especifico!=0
+gen d_especifico = 0
+forvalues x=1/5{
+	replace d_especifico = 1 if pce_`x'!=.	
+}
 
-
-
-global F_controls ed*2 ed*3
-global A_controls paa_v paa_m notas
+*If coming from a single- or two-parents household
+gen d_single = (merge_father==3 & merge_mother==1) | (merge_father==1 & merge_mother==3)

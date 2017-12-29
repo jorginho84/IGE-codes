@@ -27,6 +27,12 @@ else if "`user'" == "Nico"{
 
 }
 
+else if "`user'" == "C"{
+	global codes "C:\Users\death\Desktop\jorge1\ige-codes"
+	global data "C:\Users\death\Desktop\jorge1/data"
+	global results "C:\Users\death\Desktop\jorge1/results"
+
+}
 
 
 ***********************************************************************
@@ -77,7 +83,7 @@ forvalues y=94/98{
 	
 	*Tipo educacion
 	gen type_educ = 1 if tip_ed==9 | tip_ed==1 | tip_ed==2 
-	replace tip_ed = 0 if tip_ed>=3 & tip_ed<=8
+	replace type_educ = 0 if tip_ed>=3 & tip_ed<=8
 	
 	*Horario
 	gen jornada=0 if horario!=. 
@@ -121,7 +127,9 @@ append using `data_95'
 append using `data_96'
 append using `data_97'
 append using `data_98'
-
+preserve
+qui: do "$codes/descriptiva1.do"
+restore 
 *Dejando ultima paa
 gen year_neg=-year
 sort rut year_neg
@@ -198,12 +206,14 @@ drop if tot_stud==0
 *Define control variables
 local identifiers rut_ fam_id individual digito 
 local charac sexo egreso year_na pareja trabaja region comuna
-local family socu_pa socu_ma pcoh
+local family socu_pa socu_ma pcoh esc_pa esc_ma
 local test_scores paa_v paa_m paa_h paa_b paa_s paa_f paa_mat paa_q  notas
 local schools codcol depe type_school type_educ jornada
 
 
 keep `identifiers' `charac' `family' `test_scores' `schools'
+
+
 
 *Packing
 
@@ -238,8 +248,6 @@ rename digito DV
 save "$data/paa_9498_ok.dta", replace
 
 *This is for SII
-sample 10, count
-replace RUT = RUT*1.2
 outsheet _all using "$data/data_RCU_ok.csv", replace
 
 
