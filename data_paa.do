@@ -205,18 +205,37 @@ drop if tot_stud==0
 
 *Define control variables
 local identifiers rut_ fam_id individual digito 
-local charac sexo egreso year_na pareja trabaja region comuna
-local family socu_pa socu_ma pcoh esc_pa esc_ma
-local test_scores paa_v paa_m paa_h paa_b paa_s paa_f paa_mat paa_q  notas
-local schools codcol depe type_school type_educ jornada
+local charac sexo egreso year_na trabaja region comuna
+local family socu_pa socu_ma esc_pa esc_ma
+local test_scores paa_v paa_m paa_h notas
+local schools codcol depe type_school type_educ
 
 
 keep `identifiers' `charac' `family' `test_scores' `schools'
 
 
+/*
+egen paa = rowmean(paa_v paa_m)
+
+xtile pc_paa = paa, nq(100)
+xtile pc50_paa = paa, nq(50)
+xtile pc25_paa = paa, nq(25)
+xtile pc10_paa = paa, nq(10)
+
+
+/*Checking #unique categories*/
+
+duplicates r pc_paa region
+duplicates r pc10_paa region depe if individual=="student" & depe!=.
+duplicates tag region depe, gen(dupli)
+
+duplicates r pc25_paa depe
+
+duplicates r pc10_paa esc_pa esc_ma socu_pa socu_ma
+*/
 
 *Packing
-
+/*
 foreach name in charac family test_scores schools{
 
 	local i = 1
@@ -241,6 +260,7 @@ foreach name in charac family test_scores schools{
 
 
 order rut_ digito fam_id individual *_v
+*/
 rename rut_ RUT
 rename digito DV
 
